@@ -37,6 +37,8 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    error_msg = ""
+
     if request.method == "POST":
         username = request.form.get("username", "")
         password = request.form.get("password", "")
@@ -47,7 +49,7 @@ def login():
         else:
             error_msg = "Wrong username or password. Please try again."
             pass
-    return render_template("login.html")
+    return render_template("login.html", session=session, error_msg=error_msg)
 
 app.config['UPLOAD_FOLDER'] = 'public/wallpapers'
 

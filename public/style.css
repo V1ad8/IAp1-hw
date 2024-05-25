@@ -127,3 +127,21 @@ h1.main-title {
   max-height: 100000px;
   visibility: visible;
 }
+
+label {
+  font-size: larger;
+}
+
+button {
+  background-color: #4f4ddd;
+  color: white;
+  margin-top: 20px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 5px;
+}
+
+input {
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
