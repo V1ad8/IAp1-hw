@@ -1,11 +1,10 @@
-<!-- TODO: Don't forget to extend the base template ;)  -->
-
 {% extends "_base.html" %}
 
 {% block title %}Login{% endblock %}
 
 {% block nav_bar %}
-<a class="nav-item nav-link" href="/">Home</a>
+<a class="nav-item nav-link" href="/">Gallery</a>
+<a class="nav-item nav-link" href="/about">About me</a>
 {% if session["authenticated"] %}
 <a class="nav-item nav-link" href="/upload">Upload</a>
 <a class="nav-item nav-link" href="/logout">Logout</a>

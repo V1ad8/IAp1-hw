@@ -171,3 +171,38 @@ input {
 .image-relative:hover .delete-button {
   display: block;
 }
+
+.theme {
+  margin-bottom: 5px;
+}
+
+.theme-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+}
+
+.theme-title {
+  margin: 0;
+  flex: 1;
+  cursor: pointer;
+}
+
+.delete-all-form {
+  position: absolute;
+  bottom: 14px;
+  right: 15px;
+}
+
+.delete-all-button {
+  background: transparent;
+  border: none;
+  color: red;
+  display: none;
+}
+
+.theme-header:hover .delete-all-button {
+  display: block;
+}

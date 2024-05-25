@@ -1,7 +1,8 @@
 import ast
 import atexit
 from curses import flash
-from flask import Flask, request, render_template, redirect, url_for, flash
+from PIL import Image
+from flask import Flask, request, render_template, redirect, flash, send_file
 from werkzeug.utils import secure_filename
 from flask import session
 import os
@@ -20,17 +21,93 @@ wallpapers = {}
 
 DATABASE_FILE = "public/database.txt"
 
-@app.context_processor
-def inject_user():
-    return dict(user=session)
+def create_thumbnails():
+    for theme, files in wallpapers.items():
+        for file in files:
+            print(file)
 
-def is_authenticated():
-    return session.get("authenticated", False)
+            original_image_path = os.path.join('public', 'wallpapers', theme, file)
+            extension = file.split('.')[-1]
+            file_name = file.split('.')[0]
+            thumbnail_dir = os.path.join('public', 'wallpapers', theme)
+            thumbnail_path = os.path.join(thumbnail_dir, f'{file_name}.thumb.png')
+
+            if os.path.exists(thumbnail_path):
+                continue
+
+            original_image = Image.open(original_image_path)
+            original_image.thumbnail((200, 200))
+            original_image.save(thumbnail_path, "PNG")
+
+            print(thumbnail_path)
+
+            try:
+                if not os.path.exists(thumbnail_path):
+                    os.makedirs(thumbnail_dir, exist_ok=True)
+
+            except Exception as e:
+                print(f"Error creating thumbnails: {e}")
+                return "Error creating thumbnails", 500
 
 @app.route("/")
 def index():
+    # create thumbnails for all images
     wallpapers = read_database(DATABASE_FILE)
+    create_thumbnails()
     return render_template("index.html", wallpapers=wallpapers, session=session)
+
+@app.route('/about')
+def about():
+    return render_template('about.html', session=session)
+
+# Allowed file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Check if the file extension is allowed
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    if not session.get("authenticated", False):
+        return redirect("/login")
+
+    if request.method == 'POST':
+        file = request.files.get('image')
+        theme = request.form.get("category", "")
+        if theme == "custom":
+            theme = request.form.get("custom_theme", "")
+            os.makedirs(os.path.join("public/wallpapers", theme), exist_ok=True)
+        new_name = request.form.get("name", "")
+
+        if not os.path.exists(os.path.join("public/wallpapers", theme)):
+            os.makedirs(os.path.join("public/wallpapers", theme))
+
+        if new_name:
+            name = secure_filename(new_name + "." + file.filename.split('.')[-1])
+        else:
+            name = secure_filename(file.filename)
+
+        if file and allowed_file(file.filename) and theme:
+            save_path = os.path.join("public/wallpapers", theme, name)
+
+            if os.path.exists(save_path):
+                return redirect("/upload")
+
+            file.save(save_path)
+
+            current_files = wallpapers.get(theme, [])
+            current_files.append(name)
+            wallpapers[theme] = current_files
+
+            write_database(DATABASE_FILE)
+            read_database(DATABASE_FILE)
+
+            return redirect('/upload')
+
+    predefined_themes = list(wallpapers.keys())
+
+    return render_template('upload.html', predefined_themes=predefined_themes, session=session)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -48,48 +125,14 @@ def login():
             pass
     return render_template("login.html", session=session, error_msg=error_msg)
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload():
+@app.route("/logout")
+def logout():
     if not session["authenticated"]:
-        return redirect("/login")
+        return redirect("/")
 
-    if request.method == 'POST':
-        file = request.files['file']
-        theme = request.form.get("theme", "")
-        if theme == "custom":
-            theme = request.form.get("custom_theme", "")
-            os.system(f"mkdir -p public/uploads/\"{theme}\"")
-        new_name = request.form.get("new_name", "")
-
-        if new_name:
-            name = new_name + "." + file.filename.split('.')[-1]
-        else:
-            name = file.filename
-
-        save_path = os.path.join(app.config['public/wallpapers'], theme, name)
-        print(save_path)
-
-        if os.path.exists(save_path):
-            file.save(save_path)
-            return redirect("/upload")
-        
-        if file and theme:
-            file.save(save_path)
-
-            current_files = wallpapers.get(theme, [])
-            current_files.append(name)
-            wallpapers[theme] = current_files
-
-            write_database(DATABASE_FILE)
-            read_database(DATABASE_FILE)
-
-        
-    predefined_themes = []
-    for theme in wallpapers.keys():
-        predefined_themes.append(theme)
-
-    return render_template('upload.html', predefined_themes=predefined_themes, session=session)
-
+    session["authenticated"] = False
+    session["username"] = ""
+    return redirect("/")
 
 @app.route('/delete_image', methods=['POST'])
 def delete_image():
@@ -114,7 +157,7 @@ def delete_image():
     except Exception as e:
         print(f"Error deleting image: {e}")
 
-    return redirect(url_for('index'))
+    return redirect('/')
 
 @app.route('/delete_all_images', methods=['POST'])
 def delete_all_images():
@@ -139,22 +182,7 @@ def delete_all_images():
     except Exception as e:
         print(f"Error deleting images: {e}")
 
-    return redirect(url_for('index'))
-
-@app.route("/logout")
-def logout():
-    if not session["authenticated"]:
-        return redirect("/")
-
-    session["authenticated"] = False
-    session["username"] = ""
-    return redirect("/")
-
-@app.context_processor
-def inject_template_vars():
-    return {
-        "todo_var": "TODO_inject_common_template_variables"
-    }
+    return redirect('/')
 
 def read_database(filename):
     global wallpapers
@@ -193,11 +221,10 @@ def write_database(filename):
     file.write(content)
     file.close()
 
-
 @app.errorhandler(404)
 def error404(code):
     return "HTTP Error 404 - Page Not Found"
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(host="0.0.0.0", debug=True, port=5000)
 
