@@ -1,8 +1,7 @@
 import ast
 from PIL import Image
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, session
 from werkzeug.utils import secure_filename
-from flask import session
 import os
 
 app = Flask(__name__, static_folder="public")
