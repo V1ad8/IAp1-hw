@@ -29,3 +29,6 @@ I chose the wallpaper theme because I like to do something with meaning, not jus
 
 ## Challenges
 My main challenge was not knowing the language. I have never worked with python before this course and I have just played with html in highschool. I had to do a lot of research, like tutorials and reading the labs.
+
+## Resources / Bibliography:
+* The [skeleton](https://ocw.cs.pub.ro/courses/_media/ii/labs/s2/lab02-skel.zip) for the lab from which I 'borrowed' most of the code and then I modified it.
