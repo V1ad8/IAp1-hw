@@ -1,0 +1,41 @@
+{% extends "_base.html" %}
+{% block title %}Home Page{% endblock %}
+
+{% block nav_bar %}
+<a class="nav-item nav-link active" href="/">Home</a>
+{% if user["authenticated"] %}
+<a class="nav-item nav-link" href="/upload">Upload</a>
+<a class="nav-item nav-link" href="/logout">Logout</a>
+{% else %}
+<a class="nav-item nav-link" href="/login">Login</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div>
+    {% for theme, paths in wallpapers.items() %}
+    <div class="theme">
+        <h3 onclick="toggleImages('{{ loop.index }}')">{{ theme }}</h3>
+        <div class="image-container" id="theme-{{ loop.index }}">
+            {% for path in paths %}
+            <a href="{{ path }}" download="{{ path.split('/')[-1] }}">
+                <img src="public/wallpapers/{{ theme }}/{{ path }}" alt="{{ theme }} image">
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function toggleImages(themeIndex) {
+        const imageContainer = document.getElementById('theme-' + themeIndex);
+        if (imageContainer.classList.contains('expanded')) {
+            imageContainer.classList.remove('expanded');
+        } else {
+            imageContainer.classList.add('expanded');
+        }
+    }
+</script>
+
+{% endblock %}

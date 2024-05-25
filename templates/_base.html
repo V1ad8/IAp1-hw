@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="icon" href="../public/images/icon.png">
+    <!-- Bootstrap CSS -->
+    <link href="../public/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Website CSS -->
+    <link rel="stylesheet" type="text/css" href="../public/style.css">
+
+    <title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+    <!-- Note: <header> tag is a layout standard in HTML5! use CSS to customize it! -->
+
+    <header class="site-header">
+        <div class="container">
+            <!-- TODO_task01: insert header background image in here (also check public/style.css for further hints!) -->
+            <div class="text-center">
+                <img src="../public/images/banner.png" alt="header image">
+            </div>
+        </div>
+
+        <!-- This is a navigation bar (i.e., menu) -->
+        <nav class="navbar navbar-expand-md navbar-dark">
+            <div class="container">
+                <a class="navbar-brand mr-4" href="/">Menu</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarToggle">
+                    <div class="navbar-nav mr-auto">{% block nav_bar %}{% endblock %}</div>
+
+                    <div class="navbar-nav">
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main page content element (with main content + right sidebar) -->
+    <main role="main" class="container">
+        <div class="row">
+            <div class="container">
+                <!-- Left-side content: page title + actual page text -->
+                <div class="content-box main-content">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Include Bootstrap script (should be here, at the bottom, as per Bootstrap docs) -->
+    <script src="../public/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
