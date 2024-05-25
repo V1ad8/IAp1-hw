@@ -1,14 +1,11 @@
 import ast
-import atexit
-from curses import flash
 from PIL import Image
-from flask import Flask, request, render_template, redirect, flash, send_file
+from flask import Flask, request, render_template, redirect
 from werkzeug.utils import secure_filename
 from flask import session
 import os
 
 app = Flask(__name__, static_folder="public")
-# app.secret_key = "TODO_task3"
 
 session = {"authenticated": False, "username": ""}
 
@@ -43,7 +40,6 @@ def create_thumbnails():
 
 @app.route("/")
 def index():
-    # create thumbnails for all images
     wallpapers = read_database(DATABASE_FILE)
     create_thumbnails()
     return render_template("index.html", wallpapers=wallpapers, session=session)
@@ -52,10 +48,8 @@ def index():
 def about():
     return render_template('about.html', session=session)
 
-# Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Check if the file extension is allowed
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
