@@ -145,3 +145,29 @@ input {
   margin-bottom: 10px;
   border-radius: 5px;
 }
+
+.image-wrapper {
+  margin-bottom: 10px;
+  position: relative;
+  display: inline-block;
+}
+
+.image {
+  display: block;
+  max-width: auto;
+  height: 174px;
+}
+
+.delete-button {
+  position: absolute;
+  bottom: 12px;
+  right: 15px;
+  display: none;
+  background: transparent;
+  border: none;
+  color: red;
+}
+
+.image-relative:hover .delete-button {
+  display: block;
+}

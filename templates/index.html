@@ -3,7 +3,7 @@
 
 {% block nav_bar %}
 <a class="nav-item nav-link active" href="/">Home</a>
-{% if user["authenticated"] %}
+{% if session["authenticated"] %}
 <a class="nav-item nav-link" href="/upload">Upload</a>
 <a class="nav-item nav-link" href="/logout">Logout</a>
 {% else %}
@@ -15,12 +15,35 @@
 <div>
     {% for theme, paths in wallpapers.items() %}
     <div class="theme">
-        <h3 onclick="toggleImages('{{ loop.index }}')">{{ theme }}</h3>
+        <div class="theme-header">
+            <h3 onclick="toggleImages('{{ loop.index }}')" class="theme-title">{{ theme }}</h3>
+            {% if session["authenticated"] %}
+            <form method="post" action="{{ url_for('delete_all_images') }}" class="delete-all-form">
+                <input type="hidden" name="theme" value="{{ theme }}">
+                <button type="submit" class="btn btn-danger btn-sm delete-all-button">
+                    <i class="fas fa-trash-alt"></i> Delete All
+                </button>
+            </form>
+            {% endif %}
+        </div>
         <div class="image-container" id="theme-{{ loop.index }}">
             {% for path in paths %}
-            <a href="{{ path }}" download="{{ path.split('/')[-1] }}">
-                <img src="public/wallpapers/{{ theme }}/{{ path }}" alt="{{ theme }} image">
-            </a>
+            <div class="image-wrapper">
+                <div class="image-relative">
+                    <a href="{{ path }}" download="{{ path.split('/')[-1] }}">
+                        <img src="public/wallpapers/{{ theme }}/{{ path }}" alt="{{ theme }} image" class="image">
+                    </a>
+                    {% if session["authenticated"] %}
+                    <form method="post" action="{{ url_for('delete_image') }}" class="delete-form">
+                        <input type="hidden" name="theme" value="{{ theme }}">
+                        <input type="hidden" name="image_path" value="{{ path }}">
+                        <button type="submit" class="btn btn-danger btn-sm delete-button">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -37,5 +60,43 @@
         }
     }
 </script>
+
+<style>
+    .theme {
+        margin-bottom: 5px;
+    }
+
+    .theme-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        position: relative;
+    }
+
+    .theme-title {
+        margin: 0;
+        flex: 1;
+        cursor: pointer;
+    }
+
+    .delete-all-form {
+        position: absolute;
+        bottom: 14px;
+        right: 15px;
+    }
+
+    .delete-all-button {
+        background: transparent;
+        border: none;
+        color: red;
+        display: none;
+    }
+
+    .theme-header:hover .delete-all-button {
+        display: block;
+    }
+</style>
+
 
 {% endblock %}

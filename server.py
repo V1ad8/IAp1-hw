@@ -6,12 +6,9 @@ from werkzeug.utils import secure_filename
 from flask import session
 import os
 
-# Note: static folder means all files from there will be automatically served over HTTP
 app = Flask(__name__, static_folder="public")
-app.secret_key = "TODO_task3"
+# app.secret_key = "TODO_task3"
 
-# TODO Task 02: you can use a global variable for storing the auth session
-# e.g., add the "authenticated" (boolean) and "username" (string) keys.
 session = {"authenticated": False, "username": ""}
 
 ALLOWED_USERS = {
@@ -33,7 +30,7 @@ def is_authenticated():
 @app.route("/")
 def index():
     wallpapers = read_database(DATABASE_FILE)
-    return render_template("index.html", wallpapers=wallpapers)
+    return render_template("index.html", wallpapers=wallpapers, session=session)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -50,8 +47,6 @@ def login():
             error_msg = "Wrong username or password. Please try again."
             pass
     return render_template("login.html", session=session, error_msg=error_msg)
-
-app.config['UPLOAD_FOLDER'] = 'public/wallpapers'
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -71,7 +66,7 @@ def upload():
         else:
             name = file.filename
 
-        save_path = os.path.join(app.config['UPLOAD_FOLDER'], theme, name)
+        save_path = os.path.join(app.config['public/wallpapers'], theme, name)
         print(save_path)
 
         if os.path.exists(save_path):
@@ -94,7 +89,57 @@ def upload():
         predefined_themes.append(theme)
 
     return render_template('upload.html', predefined_themes=predefined_themes, session=session)
-    # return render_template('upload.html')
+
+
+@app.route('/delete_image', methods=['POST'])
+def delete_image():
+    theme = request.form['theme']
+    image_path = request.form['image_path']
+    
+    full_image_path = os.path.join('public', 'wallpapers', theme, image_path)
+    
+    try:
+        if os.path.exists(full_image_path):
+            os.remove(full_image_path)
+            wallpapers[theme].remove(image_path)
+
+            if not wallpapers[theme]:
+                wallpapers.pop(theme)
+                os.rmdir(os.path.join('public', 'wallpapers', theme))
+
+            write_database(DATABASE_FILE)
+            read_database(DATABASE_FILE)
+        else:
+            print("The file does not exist")
+    except Exception as e:
+        print(f"Error deleting image: {e}")
+
+    return redirect(url_for('index'))
+
+@app.route('/delete_all_images', methods=['POST'])
+def delete_all_images():
+    theme = request.form['theme']
+    
+    theme_dir = os.path.join('public', 'wallpapers', theme)
+    
+    try:
+        for image_path in wallpapers.get(theme, []):
+            full_image_path = os.path.join(theme_dir, image_path)
+            if os.path.exists(full_image_path):
+                os.remove(full_image_path)
+        
+        wallpapers[theme] = []
+
+        wallpapers.pop(theme)
+        os.rmdir(theme_dir)
+
+        write_database(DATABASE_FILE)
+        read_database(DATABASE_FILE)
+        
+    except Exception as e:
+        print(f"Error deleting images: {e}")
+
+    return redirect(url_for('index'))
 
 @app.route("/logout")
 def logout():
@@ -111,9 +156,6 @@ def inject_template_vars():
         "todo_var": "TODO_inject_common_template_variables"
     }
 
-
-# You can use this as a starting point for Task 04
-# (note: you need a "write" counterpart)
 def read_database(filename):
     global wallpapers
 
@@ -151,16 +193,11 @@ def write_database(filename):
     file.write(content)
     file.close()
 
-atexit.register(write_database, "public/out.txt")
-
 
 @app.errorhandler(404)
 def error404(code):
-    # bonus: make it show a fancy HTTP 404 error page, with red background and bold message ;)
     return "HTTP Error 404 - Page Not Found"
 
-
-# Run the web server (port 5000 - the default Flask port)
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
 
