@@ -12,10 +12,7 @@ app = Flask(__name__, static_folder="public")
 
 session = {"authenticated": False, "username": ""}
 
-ALLOWED_USERS = {
-    "admin": "admin",
-    "user": "password",
-}
+ALLOWED_USERS = {"admin": "admin"}
 
 wallpapers = {}
 
@@ -24,8 +21,6 @@ DATABASE_FILE = "public/database.txt"
 def create_thumbnails():
     for theme, files in wallpapers.items():
         for file in files:
-            print(file)
-
             original_image_path = os.path.join('public', 'wallpapers', theme, file)
             extension = file.split('.')[-1]
             file_name = file.split('.')[0]
@@ -39,14 +34,11 @@ def create_thumbnails():
             original_image.thumbnail((200, 200))
             original_image.save(thumbnail_path, "PNG")
 
-            print(thumbnail_path)
-
             try:
                 if not os.path.exists(thumbnail_path):
                     os.makedirs(thumbnail_dir, exist_ok=True)
 
             except Exception as e:
-                print(f"Error creating thumbnails: {e}")
                 return "Error creating thumbnails", 500
 
 @app.route("/")
@@ -140,10 +132,12 @@ def delete_image():
     image_path = request.form['image_path']
     
     full_image_path = os.path.join('public', 'wallpapers', theme, image_path)
+    thumbnail_path = os.path.join('public', 'wallpapers', theme, f'{image_path.split(".")[0]}.thumb.png')
     
     try:
         if os.path.exists(full_image_path):
             os.remove(full_image_path)
+            os.remove(thumbnail_path)
             wallpapers[theme].remove(image_path)
 
             if not wallpapers[theme]:
@@ -152,10 +146,9 @@ def delete_image():
 
             write_database(DATABASE_FILE)
             read_database(DATABASE_FILE)
-        else:
-            print("The file does not exist")
     except Exception as e:
-        print(f"Error deleting image: {e}")
+        return "Error creating thumbnails", 500
+
 
     return redirect('/')
 
@@ -180,7 +173,8 @@ def delete_all_images():
         read_database(DATABASE_FILE)
         
     except Exception as e:
-        print(f"Error deleting images: {e}")
+        return "Error creating thumbnails", 500
+
 
     return redirect('/')
 
@@ -208,7 +202,8 @@ def write_database(filename):
             for theme, files in wallpapers.items():
                 file.write(f'"{theme}": {files},\n')
     except Exception as e:
-        print("Error:", e)
+        return "Error creating thumbnails", 500
+
 
     file.close()
 

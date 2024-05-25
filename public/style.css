@@ -154,7 +154,7 @@ input {
 
 .image {
   display: block;
-  max-width: auto;
+  width: auto;
   height: 174px;
 }
 

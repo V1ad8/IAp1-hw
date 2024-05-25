@@ -31,7 +31,7 @@
             {% for path in paths %}
             <div class="image-wrapper">
                 <div class="image-relative">
-                    <a href="{{ path }}" download="{{ path.split('/')[-1] }}">
+                    <a href="public/wallpapers/{{ theme }}/{{ path }}">
                         <img src="public/wallpapers/{{ theme }}/{{ path.split('.')[0] }}.thumb.png" alt="{{ theme }} image" class="image">
                     </a>
                     {% if session["authenticated"] %}
